@@ -1,0 +1,14 @@
+[package]
+name = "wordlesolvers"
+version = "0.1.0"
+edition = "2024"
+
+[profile.release]
+opt-level = "z"
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true
+incremental = false
+debug = false
+rpath = false
