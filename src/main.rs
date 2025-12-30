@@ -73,7 +73,7 @@ fn evaluate<S: Solver>(words: &[&'static str], times_over: usize) {
 		print!("\r\x1b[2K");
 		print!("Evaluating \x1b[96m{}\x1b[0m...", name);
 		if nanos > 0 {
-			print!(" (eta {:.1}s)", (nanos as f32) / 1_000_000_000.0);
+			print!(" (eta {}s)", nanos / 1_000_000_000);
 		}
 		std::io::Write::flush(&mut std::io::stdout()).unwrap();
 	};
@@ -87,8 +87,14 @@ fn evaluate<S: Solver>(words: &[&'static str], times_over: usize) {
 			/ (elapsed.len() as u128)) as usize
 	}
 	eta_nanos(0);
+	let mut hard_mode_compliant = true;
 	for _ in 0..times_over {
 		for &target in words {
+			let mut set_of_possible_words = if hard_mode_compliant {
+				words.iter().copied().collect::<std::collections::HashSet<_>>()
+			} else {
+				std::collections::HashSet::new()
+			};
 			let start = std::time::Instant::now();
 			let mut solver = S::new(words);
 			let mut attempts = 0;
@@ -102,7 +108,13 @@ fn evaluate<S: Solver>(words: &[&'static str], times_over: usize) {
 					);
 					return;
 				}
+				if hard_mode_compliant && !set_of_possible_words.contains(guess) {
+					hard_mode_compliant = false;
+				}
 				let fb = Feedback::on(guess, target);
+				if hard_mode_compliant {
+					set_of_possible_words.retain(|&candidate| crate::Feedback::on(guess, candidate) == fb);
+				}
 				solver.feedback(guess, fb);
 				if guess == target {
 					distribution[attempts - 1] += 1;
@@ -114,7 +126,7 @@ fn evaluate<S: Solver>(words: &[&'static str], times_over: usize) {
 				}
 			}
 			elapsed.push(start.elapsed());
-			if elapsed.len() % 100 == 0 || elapsed.len() < 100 {
+			if elapsed.len() % 1000 == 0 || elapsed.len() < 30 {
 				let runs_left = words.len() * times_over - elapsed.len();
 				if runs_left > 0 {
 					let nanos_left = elapsed_average_nanos(&elapsed) * runs_left;
@@ -133,25 +145,23 @@ fn evaluate<S: Solver>(words: &[&'static str], times_over: usize) {
 			(elapsed.len() - distribution[6]) * 100 / elapsed.len(),
 			if distribution[6] == 0 { " :)" } else { "" }
 		),
-		"",
+		if hard_mode_compliant {"hard mode"} else {""},
 		"",
 		""
 	];
 	let mut report = String::new();
 	for (i, amount) in distribution.iter().enumerate() {
 		report += &format!(
-			"{}{:<18}\x1b[0m{:<14}{:<7}{}",
+			"{}{:<18}\x1b[0m{:<4}{}{:>6} ",
 			match i {
 				0 => "\x1b[96m",
 				_ => "\x1b[90m"
 			},
 			left_column[i],
 			match i {
-				6 => "unsolved",
-				0 => "1 guess",
-				more => &format!("{} guesses", more + 1)
+				6 => "fail",
+				more => &(more+1).to_string()
 			},
-			amount,
 			match i {
 				0 => "\x1b[38;2;44;179;66m",
 				1 => "\x1b[38;2;97;204;88m",
@@ -161,14 +171,17 @@ fn evaluate<S: Solver>(words: &[&'static str], times_over: usize) {
 				5 => "\x1b[38;2;204;121;43m",
 				6 => "\x1b[38;2;204;43;44m",
 				_ => unreachable!()
-			}
+			},
+			amount
 		);
-		if *amount > 0 {
-			report += &format!("#");
+		let mut eighths_to_do = amount / (4 * times_over);
+		if *amount > 0 && eighths_to_do == 0 {
+			eighths_to_do = 1;
 		}
-		for _ in 0..amount / (30 * times_over) {
-			report += &format!("#");
+		for _ in 0..eighths_to_do/8 {
+			report += &format!("█");
 		}
+		report += ["", "▎", "▍", "▌", "▋", "▊", "▉", "█"][eighths_to_do % 8];
 		report += &format!("\x1b[0m\n");
 	}
 	println!("{}", report);
