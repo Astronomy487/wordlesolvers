@@ -25,13 +25,13 @@ The program accepts an optional command-line parameter of the number of iteratio
 
 To add a solver:
 
-- Create a new .rs file in src/solvers/
+- Create a new .rs file in [src/solvers/](https://github.com/Astronomy487/wordlesolvers/tree/master/src/solvers)
 - Make some type that implements the `Solver` trait
-- Add it at the top of src/solvers/mod.rs
-- Add it at the bottom of src/main.rs
+- Add it at the top of [src/solvers/mod.rs](https://github.com/Astronomy487/wordlesolvers/blob/master/src/solvers/mod.rs)
+- Add it at the bottom of [src/main.rs](https://github.com/Astronomy487/wordlesolvers/blob/master/src/main.rs)
 
 If I were better at writing macros, I would streamline this process.
 
-The traits and types I provide in the `crate::` scope are listed and documented in src/solvers/mod.rs. Read them before implementing a solver. Look to src/solvers/dumbsolver.rs and src/solvers/basicsolver.rs for inspiration.
+The traits and types I provide in the `crate::` scope are listed and documented in [src/solvers/mod.rs](https://github.com/Astronomy487/wordlesolvers/blob/master/src/solvers/mod.rs). Read them before implementing a solver. Look to [src/solvers/dumbsolver.rs](https://github.com/Astronomy487/wordlesolvers/blob/master/src/solvers/dumbsolver.rs) and [src/solvers/basicsolver.rs](https://github.com/Astronomy487/wordlesolvers/blob/master/src/solvers/basicsolver.rs) for inspiration.
 
-It uses [this wordlist](https://github.com/Astronomy487/wordlesolvers/blob/main/src/wordlist.txt), which I think is the original Wordle list. Let me know if it's not, I guess.
+It uses [this wordlist](https://github.com/Astronomy487/wordlesolvers/blob/master/src/wordlist.txt), which I think is the original Wordle list. Let me know if it's not, I guess.
