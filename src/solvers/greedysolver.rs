@@ -27,7 +27,6 @@ impl GreedySolver {
 				best_word = guess;
 			}
 		}
-
 		best_word
 	}
 }
@@ -42,7 +41,7 @@ impl crate::Solver for GreedySolver {
 	fn guess(&mut self) -> &'static str {
 		if !self.used_initial_guess_yet {
 			self.used_initial_guess_yet = true;
-			return "arise"; // TODO LATER maybe one-time precomputation? for now hardcoded
+			return "raise"; // TODO LATER maybe one-time precomputation? for now hardcoded
 		}
 		self.best_guess_internal()
 	}

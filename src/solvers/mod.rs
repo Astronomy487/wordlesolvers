@@ -1,6 +1,7 @@
 pub mod basicsolver;
 pub mod dumbsolver;
 pub mod greedysolver;
+pub mod vibexsolver;
 
 /*
 

@@ -6,8 +6,6 @@
 #![deny(private_interfaces)]
 #![deny(absolute_paths_not_starting_with_crate)]
 
-static WORDLIST: &str = include_str!("wordlist.txt");
-
 #[derive(Copy, Clone, PartialEq)]
 pub enum Feedback {
 	Black,
@@ -67,7 +65,7 @@ pub trait Solver {
 	fn feedback(&mut self, the_guess: &'static str, feedback: [crate::Feedback; 5]);
 }
 
-fn evaluate<S: Solver>(words: &[&'static str], times_over: usize) {
+fn evaluate<S: Solver>(words: &[&'static str], valid_guesses: &std::collections::HashSet<&'static str>, times_over: usize) {
 	let name = std::any::type_name::<S>().rsplit("::").next().unwrap();
 	let eta_nanos = |nanos: usize| {
 		print!("\r\x1b[2K");
@@ -101,7 +99,7 @@ fn evaluate<S: Solver>(words: &[&'static str], times_over: usize) {
 			loop {
 				attempts += 1;
 				let guess = solver.guess();
-				if !words.contains(&guess) {
+				if !valid_guesses.contains(&guess) {
 					println!(
 						"\r\x1b[2K\x1b[96m{}\x1b[0m could not be evaluated as it guessed invalid word \"{}\"\n",
 						name, guess
@@ -196,8 +194,11 @@ fn main() {
 		.parse()
 		.unwrap_or(1);
 
-	let words: Vec<&'static str> = WORDLIST.lines().collect();
-	evaluate::<solvers::dumbsolver::DumbSolver>(&words, times_over);
-	evaluate::<solvers::basicsolver::BasicSolver>(&words, times_over);
-	evaluate::<solvers::greedysolver::GreedySolver>(&words, times_over);
+	let words: Vec<&'static str> = include_str!("wordlist-truth.txt").lines().collect();
+	let valid_guesses: std::collections::HashSet<&'static str> = include_str!("wordlist-guess.txt").lines().collect();
+	
+	evaluate::<solvers::dumbsolver::DumbSolver>(&words, &valid_guesses, times_over);
+	evaluate::<solvers::basicsolver::BasicSolver>(&words, &valid_guesses, times_over);
+	evaluate::<solvers::greedysolver::GreedySolver>(&words, &valid_guesses, times_over);
+	evaluate::<solvers::vibexsolver::VibexSolver>(&words, &valid_guesses, times_over);
 }
